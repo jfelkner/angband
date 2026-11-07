@@ -436,8 +436,9 @@ add_executable(OurExecutable
 )
 
 if(IOS)
-    if(SAVE_LIBRARY_SOURCE_DIR)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/os/ios/save-library/IOSSaveLibrary.swift")
         enable_language(Swift)
+        set(SAVE_LIBRARY_SOURCE_DIR "${CMAKE_SOURCE_DIR}/os/ios/save-library")
         target_sources(OurExecutable PRIVATE
             "${SAVE_LIBRARY_SOURCE_DIR}/SaveMetadata.swift"
             "${SAVE_LIBRARY_SOURCE_DIR}/SaveStore.swift"
