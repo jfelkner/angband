@@ -162,7 +162,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/game")
 if(MSVC)
     add_compile_options(/W4 /utf8)
 else()
-    add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter)
+    foreach(lang C CXX OBJC OBJCXX)
+        foreach(flag -Wall -Wextra -pedantic -Wno-unused-parameter)
+            add_compile_options($<$<COMPILE_LANGUAGE:${lang}>:${flag}>)
+        endforeach()
+    endforeach()
 endif()
 
 add_library(OurCoreLib OBJECT
@@ -432,6 +436,30 @@ add_executable(OurExecutable
 )
 
 if(IOS)
+    if(SAVE_LIBRARY_SOURCE_DIR)
+        enable_language(Swift)
+        target_sources(OurExecutable PRIVATE
+            "${SAVE_LIBRARY_SOURCE_DIR}/SaveMetadata.swift"
+            "${SAVE_LIBRARY_SOURCE_DIR}/SaveStore.swift"
+            "${SAVE_LIBRARY_SOURCE_DIR}/SaveDateLabels.swift"
+            "${SAVE_LIBRARY_SOURCE_DIR}/CloudSave.swift"
+            "${SAVE_LIBRARY_SOURCE_DIR}/CloudIndex.swift"
+            "${SAVE_LIBRARY_SOURCE_DIR}/GoogleDrive.swift"
+            "${SAVE_LIBRARY_SOURCE_DIR}/CloudSync.swift"
+            "${SAVE_LIBRARY_SOURCE_DIR}/GoogleOAuthIOS.swift"
+            "${SAVE_LIBRARY_SOURCE_DIR}/IOSSaveLibrary.swift")
+        target_link_libraries(OurExecutable PRIVATE sqlite3)
+        set_target_properties(OurExecutable PROPERTIES
+            XCODE_ATTRIBUTE_SWIFT_VERSION "5.0"
+            XCODE_ATTRIBUTE_ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES "YES")
+        target_compile_definitions(OurExecutable PRIVATE ANGBAND_SAVE_LIBRARY)
+    endif()
+    if(GOOGLE_IOS_CLIENT_ID)
+        string(REGEX REPLACE "\\.apps\\.googleusercontent\\.com$" "" GOOGLE_IOS_CLIENT_PREFIX "${GOOGLE_IOS_CLIENT_ID}")
+        set(GOOGLE_IOS_URL_SCHEME "com.googleusercontent.apps.${GOOGLE_IOS_CLIENT_PREFIX}")
+    else()
+        set(GOOGLE_IOS_URL_SCHEME "local.angband.launcher")
+    endif()
     set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "")
     # ON_IOS marks the code that only the iOS app wants: the touch panel,
     # and the paths that put the user's files in the Documents directory so

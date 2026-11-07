@@ -2774,6 +2774,16 @@ static void handle_menu_kp_mod(struct sdlpui_control *ctrl,
 }
 
 #ifdef ON_IOS
+ #ifdef ANGBAND_SAVE_LIBRARY
+extern void angband_show_save_library(void);
+
+static void handle_menu_save_library(struct sdlpui_control *ctrl,
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+{
+	sdlpui_popdown_dialog(dlg, window, true);
+	angband_show_save_library();
+}
+ #endif
 static void handle_menu_reset_slots(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
 {
@@ -3474,7 +3484,11 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 {
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(
 		parent, ctrl, 3 + (int)N_ELEMENTS(angband_term_name)
-		+ ((window->index == MAIN_WINDOW) ? 2 : 0), true, false,
+		+ ((window->index == MAIN_WINDOW) ? 2 : 0)
+#ifdef ANGBAND_SAVE_LIBRARY
+		+ ((window->index == MAIN_WINDOW) ? 1 : 0)
+#endif
+		, true, false,
 		NULL, NULL, 0);
 	unsigned int i;
 	struct sdlpui_control *c;
@@ -3511,6 +3525,12 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 		sdlpui_create_submenu_button(c, "Windows", SDLPUI_HOR_LEFT,
 			handle_menu_windows, SDLPUI_CHILD_MENU_RIGHT, 0, false);
 #ifdef ON_IOS
+		#ifdef ANGBAND_SAVE_LIBRARY
+		c = sdlpui_get_simple_menu_next_unused(result,
+			SDLPUI_MFLG_NONE);
+		sdlpui_create_menu_button(c, "Save Library...",
+			SDLPUI_HOR_LEFT, handle_menu_save_library, 0, false);
+		#endif
 		/* Only the touch panel has slots to reset. */
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
