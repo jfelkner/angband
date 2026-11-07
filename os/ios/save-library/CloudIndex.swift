@@ -16,6 +16,7 @@ final class CloudIndex {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
                                                 withIntermediateDirectories: true)
         guard sqlite3_open(url.path, &db) == SQLITE_OK else { throw failure() }
+        sqlite3_busy_timeout(db, 5000)
         try run("PRAGMA journal_mode=WAL")
         try run("CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
         try run("CREATE TABLE IF NOT EXISTS files (id TEXT PRIMARY KEY, name TEXT NOT NULL, parent TEXT, modified TEXT)")
